@@ -1,0 +1,24 @@
+
+TOOL==> (defined class: <cube>)
+
+TOOL==> (defined class: <sphere>)
+
+TOOL==> (defined class: <molecule>)
+
+TOOL==> (added method to generic function: install-basics)
+
+TOOL==> (added method to generic function: molecule-model-selector)
+
+TOOL==> *undefined*
+
+TOOL==> *undefined*
+
+TOOL==> Unbound variable: volume
+
+TOOL==> (added method to generic function: volume)
+
+TOOL==> (added method to generic function: volume)
+
+TOOL==> Unbound variable: volume
+
+TOOL==> 

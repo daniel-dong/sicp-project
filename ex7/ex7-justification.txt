@@ -1,0 +1,72 @@
+;;; The name of the generic function is bound in:
+;;; Choice 1: the environment of the evaluation
+;;; Choice 2: the global environment
+;;; 
+;;; Suppose (define-method {method-name} ...) is evaluated in a non-global
+;;; environment where {method-name} is unbound, Choice 2 makes the new method
+;;; visible outside the current environment, a feature which may be useful, e.g. in
+;;; the case of installing multiple methods by calling one method (see
+;;; install-basics in Sample), while Choice 1 does not support this feature.
+;;; 
+;;; Moreover, in the current environment Choice 1 shadows the methods defined later
+;;; in the global environment with the same name, which may be an undesirable
+;;; behavior (see Sample).
+;;; 
+;;; So I took Choice 2.
+
+
+;;; Sample
+;;; NOTE: run *definitions* -> run *Test 1* -> restart the interpreter
+;;;        -> run *definitions* -> run *Test 2*
+
+;; BEGIN of *definitions*
+(define-class <cube> <object> edge)
+(define-class <sphere> <object> radius)
+(define-class <molecule> <object> diameter)
+
+(define-method install-basics ()
+  (define-method volume ((obj <cube>))
+    (expt (get-slot obj 'edge) 3))
+  (define-method volume ((obj <sphere>))
+    (define pi 3.14)
+    (define k (* 4/3 pi))
+    (* k (expt (get-slot obj 'radius) 3))))
+
+(define-method molecule-model-selector ()
+  (define-method volume ((obj <molecule>)) '*undefined-volume*)  ;initialize volume to *undefined-volume*
+  (define-method init-cube ()
+    (define-method volume ((obj <molecule>))
+      (volume (make <cube> (edge (get-slot obj 'diameter))))))
+  (define-method init-sphere ()
+    (define-method volume ((obj <molecule>))
+      (volume (make <sphere> (radius (/ (get-slot obj 'diameter) 2))))))
+  (define-method dispatch (model)
+    (cond ((eq? model 'cube) (init-cube))
+          ((eq? model 'sphere) (init-sphere))
+          (else (print 'unknown-model))))
+  dispatch)
+
+(define m1 (make <molecule> (diameter 1.0)))
+(define selector (molecule-model-selector))
+;; END of *definitions*
+
+;; *Test 1*
+(volume m1)         ; Choice 1 => Unbound variable: volume || Choice 2 => *undefined-volume*
+(install-basics)
+(selector 'cube)
+(volume m1)         ; Choice 1 => Unbound variable: volume || Choice 2 => 1.0
+
+;; *Test 2*
+(define-method volume ((obj <cube>))
+  (expt (get-slot obj 'edge) 3))
+
+(define-method volume ((obj <sphere>))
+  (define pi 3.14)
+  (define k (* 4/3 pi))
+  (* k (expt (get-slot obj 'radius) 3)))
+
+(selector 'cube)
+(volume m1)         ; Choice 1 => No method found -- APPLY-GENERIC-FUNCTION: volume || Choice 2 => 1.0
+
+(selector 'sphere)
+(volume m1)         ; Choice 1 => No method found -- APPLY-GENERIC-FUNCTION: volume || Choice 2 => 0.5233333333333333

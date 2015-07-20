@@ -1,0 +1,12 @@
+
+TOOL==> (defined class: <btree>)
+
+TOOL==> (added method to generic function: btree->list)
+
+TOOL==> (added method to generic function: btree->list)
+
+TOOL==> *undefined*
+
+TOOL==> (a (b NULL NULL) (c (d (e NULL (f NULL NULL)) (g NULL NULL)) (h (i NULL NULL) NULL)))
+
+TOOL==> 
